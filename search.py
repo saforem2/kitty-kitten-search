@@ -71,7 +71,12 @@ class Search(Handler):
         if "last_search" in cached_values and "search_history" not in cached_values:
             old = cached_values.pop("last_search")
             cached_values["search_history"] = json.dumps([old] if old else [])
-        self.history: list[str] = json.loads(cached_values.get("search_history", "[]"))
+        try:
+            self.history: list[str] = json.loads(cached_values.get("search_history", "[]"))
+            if not isinstance(self.history, list):
+                self.history = []
+        except (json.JSONDecodeError, TypeError):
+            self.history = []
         self.history_index: int = -1
         self.saved_input: str = ""
         last_search = self.history[0] if self.history else ""
@@ -393,12 +398,12 @@ class Search(Handler):
 
     def _copy_to_clipboard(self, text: str) -> bool:
         try:
-            subprocess.run(
+            result = subprocess.run(
                 [kitty_exe(), "+kitten", "clipboard"],
                 input=text.encode(),
                 capture_output=True,
             )
-            return True
+            return result.returncode == 0
         except Exception:
             return False
 
@@ -459,9 +464,9 @@ class Search(Handler):
         if self.match_index > 0 and self._matching_lines:
             idx = self.match_index - 1
             if 0 <= idx < len(self._matching_lines):
-                line = self._matching_lines[idx].strip()
+                line = self._matching_lines[idx].rstrip("\r\n")
                 if line:
-                    marker_args.extend(["3", re.escape(line)])
+                    marker_args.extend(["3", f"^{re.escape(line)}$"])
         for match_arg in self.match_args():
             try:
                 call_remote_control(["create-marker", match_arg] + marker_args)
