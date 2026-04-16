@@ -332,6 +332,7 @@ class Search(Handler):
                 self.text_marked = False
                 self.refresh()
         elif key_event.matches("up"):
+            self._count_matches()
             if self.match_count and self.match_count > 0:
                 if self.match_index <= 1:
                     self.match_index = self.match_count
@@ -342,6 +343,7 @@ class Search(Handler):
             self._create_markers()
             self.draw_screen()
         elif key_event.matches("down"):
+            self._count_matches()
             if self.match_count and self.match_count > 0:
                 if self.match_index >= self.match_count:
                     self.match_index = 1
@@ -481,7 +483,9 @@ class Search(Handler):
             self._create_markers()
         else:
             self.remove_mark()
-        self._count_matches()
+            self.match_count = None
+            self._last_counted_query = ""
+            self._matching_lines = []
 
     def remove_mark(self) -> None:
         for match_arg in self.match_args():
