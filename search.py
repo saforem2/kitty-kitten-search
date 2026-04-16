@@ -343,9 +343,11 @@ class Search(Handler):
                     self.match_index = self.match_count
                 else:
                     self.match_index -= 1
+            # Update markers before scroll so scroll_to_mark finds them
+            # (kitten runs asynchronously — create-marker after would race)
+            self._create_markers()
             for match_arg in self.match_args():
                 call_remote_control(["kitten", match_arg, str(SCROLLMARK_FILE)])
-            self._create_markers()
             self.draw_screen()
         elif key_event.matches("down"):
             self._count_matches()
@@ -359,9 +361,9 @@ class Search(Handler):
                     self.match_index = 1
                 else:
                     self.match_index += 1
+            self._create_markers()
             for match_arg in self.match_args():
                 call_remote_control(["kitten", match_arg, str(SCROLLMARK_FILE), "next"])
-            self._create_markers()
             self.draw_screen()
         elif key_event.matches("enter"):
             self.quit(0)
