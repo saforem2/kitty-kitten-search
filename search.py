@@ -334,7 +334,12 @@ class Search(Handler):
         elif key_event.matches("up"):
             self._count_matches()
             if self.match_count and self.match_count > 0:
-                if self.match_index <= 1:
+                if self.match_index == 0:
+                    # First navigation: scroll to end so prev finds the last match
+                    for match_arg in self.match_args():
+                        call_remote_control(["scroll-window", match_arg, "end"])
+                    self.match_index = self.match_count
+                elif self.match_index <= 1:
                     self.match_index = self.match_count
                 else:
                     self.match_index -= 1
@@ -345,7 +350,12 @@ class Search(Handler):
         elif key_event.matches("down"):
             self._count_matches()
             if self.match_count and self.match_count > 0:
-                if self.match_index >= self.match_count:
+                if self.match_index == 0:
+                    # First navigation: scroll to start so next finds the first match
+                    for match_arg in self.match_args():
+                        call_remote_control(["scroll-window", match_arg, "start"])
+                    self.match_index = 1
+                elif self.match_index >= self.match_count:
                     self.match_index = 1
                 else:
                     self.match_index += 1
