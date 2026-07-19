@@ -306,10 +306,11 @@ class Search(Handler):
 
 
 def main(args: list[str]) -> None:
-    call_remote_control(
-        ["resize-window", "--self", "--axis=vertical", "--increment", "-100"]
-    )
-
+    # NOTE: The upstream kitten shrinks its own window to the minimum on startup
+    # via `resize-window --self --axis=vertical --increment -100`. In the
+    # `splits` layout that clamps the window to 1 line, making the search UI
+    # invisible. We instead size the window at launch time via `--bias` in the
+    # keybinding (see kitty.conf / keys.conf), so no self-resize is needed here.
     error = ""
     if len(args) < 2 or not args[1].isdigit():
         error = "Error: Window id must be provided as the first argument."
